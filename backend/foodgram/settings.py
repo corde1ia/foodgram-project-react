@@ -14,8 +14,6 @@ SECRET_KEY = (
 
 DEBUG = os.getenv('DEBUG', default='True') == 'True'
 
-# ALLOWED_HOSTS = os.environ.get(
-#     'ALLOWED_HOSTS', default='localhost').split(', ')
 
 ALLOWED_HOSTS = ['*']
 
@@ -64,8 +62,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 
 DATABASES = {
