@@ -8,7 +8,8 @@ User = get_user_model()
 class UserAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'username', 'email',
-        'first_name', 'last_name', 'date_joined',)
+        'first_name', 'last_name', 'date_joined',
+    )
     search_fields = ('username', 'email', 'first_name', 'last_name')
     list_filter = ('date_joined', 'first_name', 'email')
     empty_value_display = '-пусто-'
