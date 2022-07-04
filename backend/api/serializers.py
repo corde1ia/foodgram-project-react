@@ -10,8 +10,8 @@ from recipes.models import Ingredient, Recipe, RecipeIngredient, Subscribe, Tag
 
 User = get_user_model()
 
-ERR_EMAIL = 'Необходимо указать электронную почту'
-ERR_PASSWORD = 'Необходимо указать пароль'
+ERR_EMAIL = 'Необходимо указать электронную почту.'
+ERR_PASSWORD = 'Необходимо указать пароль.'
 ERR_MSG = 'Невозможно войти в систему с введнными учетными данными.'
 
 
@@ -342,12 +342,12 @@ class SubscribeSerializer(serializers.ModelSerializer):
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count',
         )
-        validators = [
+        validators = (
             UniqueTogetherValidator(
                 queryset=Subscribe.objects.all(),
-                fields=['user', 'author']
+                fields=('user', 'author',)
             )
-        ]
+        )
 
     def get_recipes(self, obj):
         request = self.context.get('request')

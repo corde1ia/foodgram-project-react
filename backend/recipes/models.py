@@ -128,7 +128,7 @@ class RecipeIngredient(models.Model):
         ordering = ('-id',)
         constraints = [
             models.UniqueConstraint(
-                fields=['recipe', 'ingredient'],
+                fields=('recipe', 'ingredient',),
                 name='unique ingredient')
             ]
 
@@ -157,7 +157,7 @@ class Subscribe(models.Model):
         ordering = ('-id',)
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'author'],
+                fields=('user', 'author',),
                 name='unique_subscription')
             ]
 
