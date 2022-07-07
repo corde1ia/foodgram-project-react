@@ -19,7 +19,7 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv('DEBUG', default='True') == 'True'
 
 ALLOWED_HOSTS = [
-    '84.201.153.205', '127.0.0.1', 'localhost', 'foodgramgourmets.sytes.net'
+    '158.160.3.156', '127.0.0.1', 'localhost', 'foodgramgourmets.sytes.net'
 ]
 
 AUTH_USER_MODEL = 'users.User'
