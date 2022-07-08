@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
 
   db:
@@ -32,7 +32,7 @@ services:
     ports:
       - '8080:80'
     volumes:
-      - ./default.conf:/etc/nginx/conf.d/default.conf
+      - ./default.conf:/etc/nginx/conf.d/
       - ../frontend/build:/usr/share/nginx/html/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
