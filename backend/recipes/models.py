@@ -6,7 +6,7 @@ from foodgram import settings as s
 
 User = get_user_model()
 
-ERR_COOKINGTIME = 'Время приготовления не может быть меньше одной минуты'
+ERR_COOKINGTIME = 'Время приготовления не может быть меньше минуты'
 ERR_INGRIDIENTAMOUT = 'Необходимо добавить хотя бы один ингредиент в рецепт'
 
 
