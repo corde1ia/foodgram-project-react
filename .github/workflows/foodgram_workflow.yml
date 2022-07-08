@@ -65,6 +65,8 @@ jobs:
             sudo docker pull corde1iahub/foodgram_backend:latest
             sudo docker pull corde1iahub/foodgram_frontend:latest
             cd infra/
+            rm .env
+            touch .env
             sudo docker-compose stop
             sudo docker-compose rm backend
       - name: docker-compose up
