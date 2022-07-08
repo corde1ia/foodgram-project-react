@@ -118,7 +118,7 @@ class RecipeIngredient(models.Model):
         validators=(
             validators.MinValueValidator(
                 s.MIN_INGREDIENT_AMOUNT, message=ERR_INGRIDIENTAMOUT),
-            ),
+        ),
         verbose_name='Количество',
     )
 
@@ -130,7 +130,7 @@ class RecipeIngredient(models.Model):
             models.UniqueConstraint(
                 fields=('recipe', 'ingredient',),
                 name='unique ingredient')
-            ]
+        ]
 
 
 class Subscribe(models.Model):
@@ -159,7 +159,7 @@ class Subscribe(models.Model):
             models.UniqueConstraint(
                 fields=('user', 'author',),
                 name='unique_subscription')
-            ]
+        ]
 
     def __str__(self):
         return f'Пользователь {self.user} подписан на автора {self.author}'

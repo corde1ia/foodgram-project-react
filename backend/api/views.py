@@ -24,11 +24,11 @@ from rest_framework.permissions import (SAFE_METHODS, AllowAny,
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly
-from api.serializers import (IngredientSerializer, RecipeAddSerializer,
-                          RecipeReadSerializer, SubscribeRecipeSerializer,
-                          SubscribeSerializer, TagSerializer, TokenSerializer,
-                          UserCreateSerializer, UserListSerializer,
-                          UserPasswordSerializer)
+from api.serializers import (
+    IngredientSerializer, RecipeAddSerializer, RecipeReadSerializer,
+    SubscribeRecipeSerializer, SubscribeSerializer, TagSerializer,
+    TokenSerializer, UserCreateSerializer, UserListSerializer,
+    UserPasswordSerializer)
 from foodgram import settings as s
 
 User = get_user_model()
@@ -206,7 +206,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return Recipe.objects.annotate(
                 is_in_shopping_cart=Value(False),
                 is_favorited=Value(False),
-                ).select_related('author').prefetch_related(
+                    ).select_related('author').prefetch_related(
                     'tags', 'ingredients', 'recipe',
                     'shopping_cart', 'favorite_recipe')
 

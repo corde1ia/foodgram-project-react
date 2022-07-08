@@ -106,7 +106,7 @@ class UserPasswordSerializer(serializers.Serializer):
         authorization = authenticate(
                 username=user.email,
                 password=current_password
-            )
+        )
         if not authorization:
             raise serializers.ValidationError(
                 ERR_MSG,
@@ -297,7 +297,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     )
     is_in_shopping_cart = serializers.BooleanField(
         read_only=True
-        )
+    )
 
     class Meta:
         model = Recipe

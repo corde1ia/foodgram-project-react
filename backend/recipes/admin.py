@@ -1,7 +1,8 @@
 from django.contrib import admin
 
-from recipes.models import (FavoriteRecipe, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Subscribe, Tag)
+from recipes.models import (
+    FavoriteRecipe, Ingredient, Recipe, RecipeIngredient,
+    ShoppingCart, Subscribe, Tag)
 
 
 class RecipeIngredientAdmin(admin.StackedInline):
@@ -19,8 +20,7 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = (
         'name', 'cooking_time',
         'author__email', 'ingredients__name')
-    list_filter = ('pub_date', 'tags',
-    )
+    list_filter = ('pub_date', 'tags',)
     inlines = (RecipeIngredientAdmin,)
 
     @admin.display(
@@ -41,7 +41,7 @@ class RecipeAdmin(admin.ModelAdmin):
             for item in obj.recipe.values(
                 'ingredient__name',
                 'amount', 'ingredient__measurement_unit')]
-            )
+        )
 
     @admin.display(description='В избранном')
     def get_favorite_count(self, obj):
