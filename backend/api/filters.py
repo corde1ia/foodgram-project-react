@@ -11,12 +11,12 @@ class MultipleChoiceFieldForTags(
             raise ValidationError(
                 self.error_messages['required'],
                 code='required')
-        for v in value:
-            if v in self.choices and not self.valid_value(v):
+        for val in value:
+            if val in self.choices and not self.valid_value(val):
                 raise ValidationError(
                     self.error_messages['invalid_choice'],
                     code='invalid_choice',
-                    params={'value': v},)
+                    params={'value': val},)
 
 
 class TagsFilter(filters.AllValuesMultipleFilter):
