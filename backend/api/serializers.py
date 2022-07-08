@@ -10,8 +10,8 @@ from recipes.models import Ingredient, Recipe, RecipeIngredient, Subscribe, Tag
 
 User = get_user_model()
 
-ERR_EMAIL = 'Необходимо указать электронную почту.'
-ERR_PASSWORD = 'Необходимо указать пароль.'
+ERR_EMAIL = 'Необходимо указать Вашу электронную почту.'
+ERR_PASSWORD = 'Необходимо указать Ваш пароль.'
 ERR_MSG = 'Невозможно войти в систему с введнными учетными данными.'
 
 
