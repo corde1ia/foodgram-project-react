@@ -1,4 +1,5 @@
 import io
+from foodgram import settings as s
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -7,6 +8,8 @@ from django.db.models.expressions import Exists, OuterRef, Value
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
+from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingCart,
+                            Subscribe, Tag)
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -14,27 +17,25 @@ from rest_framework import generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action, api_view
+from rest_framework.response import Response
 from rest_framework.permissions import (SAFE_METHODS, AllowAny,
                                         IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly
-from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingCart,
-                            Subscribe, Tag)
-from .serializers import (IngredientSerializer, RecipeReadSerializer,
-                          RecipeWriteSerializer, SubscribeRecipeSerializer,
-                          SubscribeSerializer, TagSerializer, TokenSerializer,
-                          UserCreateSerializer, UserListSerializer,
-                          UserPasswordSerializer)
+from api.serializers import (
+    IngredientSerializer, RecipeAddSerializer, RecipeReadSerializer,
+    SubscribeRecipeSerializer, SubscribeSerializer, TagSerializer,
+    TokenSerializer, UserCreateSerializer, UserListSerializer,
+    UserPasswordSerializer)
+from foodgram import settings as s
 
 User = get_user_model()
-FILENAME = 'shoppingcart.pdf'
 
 
 class GetObjectMixin:
-    """Миксина для удаления/добавления рецептов избранных/корзины."""
+    """Миксин для удаления или добавления избранных рецептов или в корзину."""
 
     serializer_class = SubscribeRecipeSerializer
     permission_classes = (AllowAny,)
@@ -47,7 +48,7 @@ class GetObjectMixin:
 
 
 class PermissionAndPaginationMixin:
-    """Миксина для списка тегов и ингридиентов."""
+    """Миксин для списков ингридиентов и тэгов."""
 
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = None
@@ -56,7 +57,7 @@ class PermissionAndPaginationMixin:
 class AddAndDeleteSubscribe(
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Подписка и отписка от пользователя."""
+    """Подписка/отписка пользователей."""
 
     serializer_class = SubscribeSerializer
 
@@ -67,7 +68,7 @@ class AddAndDeleteSubscribe(
             'following__recipe'
         ).annotate(
             recipes_count=Count('following__recipe'),
-            is_subscribed=Value(True), )
+            is_subscribed=Value(True),)
 
     def get_object(self):
         user_id = self.kwargs['user_id']
@@ -79,11 +80,11 @@ class AddAndDeleteSubscribe(
         instance = self.get_object()
         if request.user.id == instance.id:
             return Response(
-                {'errors': 'На самого себя не подписаться!'},
+                {'errors': 'Вы не можете подписаться на самого себя'},
                 status=status.HTTP_400_BAD_REQUEST)
         if request.user.follower.filter(author=instance).exists():
             return Response(
-                {'errors': 'Уже подписан!'},
+                {'errors': 'Вы уже подписаны на данного пользователя'},
                 status=status.HTTP_400_BAD_REQUEST)
         subs = request.user.follower.create(author=instance)
         serializer = self.get_serializer(subs)
@@ -97,7 +98,7 @@ class AddDeleteFavoriteRecipe(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Добавление и удаление рецепта в/из избранных."""
+    """Добавление и удаление рецепта из избранных."""
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -113,7 +114,7 @@ class AddDeleteShoppingCart(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Добавление и удаление рецепта в/из корзины."""
+    """Добавление и удаление рецепта из корзины."""
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -126,7 +127,7 @@ class AddDeleteShoppingCart(
 
 
 class AuthToken(ObtainAuthToken):
-    """Авторизация пользователя."""
+    """Авторизация для пользователей."""
 
     serializer_class = TokenSerializer
     permission_classes = (AllowAny,)
@@ -142,9 +143,7 @@ class AuthToken(ObtainAuthToken):
 
 
 class UsersViewSet(UserViewSet):
-    """Пользователи."""
 
-    serializer_class = UserListSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -170,7 +169,7 @@ class UsersViewSet(UserViewSet):
         detail=False,
         permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
-        """Получить на кого пользователь подписан."""
+        """Получить список подписок."""
 
         user = request.user
         queryset = Subscribe.objects.filter(user=user)
@@ -182,35 +181,34 @@ class UsersViewSet(UserViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
-    """Рецепты."""
 
-    queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return RecipeReadSerializer
-        return RecipeWriteSerializer
+        return RecipeAddSerializer
 
     def get_queryset(self):
-        return Recipe.objects.annotate(
-            is_favorited=Exists(
-                FavoriteRecipe.objects.filter(
-                    user=self.request.user, recipe=OuterRef('id'))),
-            is_in_shopping_cart=Exists(
-                ShoppingCart.objects.filter(
-                    user=self.request.user,
-                    recipe=OuterRef('id')))
-        ).select_related('author').prefetch_related(
-            'tags', 'ingredients', 'recipe',
-            'shopping_cart', 'favorite_recipe'
-        ) if self.request.user.is_authenticated else Recipe.objects.annotate(
-            is_in_shopping_cart=Value(False),
-            is_favorited=Value(False),
-        ).select_related('author').prefetch_related(
-            'tags', 'ingredients', 'recipe',
-            'shopping_cart', 'favorite_recipe')
+        if self.request.user.is_authenticated:
+            return Recipe.objects.annotate(
+                is_favorited=Exists(
+                    FavoriteRecipe.objects.filter(
+                        user=self.request.user, recipe=OuterRef('id'))),
+                is_in_shopping_cart=Exists(
+                    ShoppingCart.objects.filter(
+                        user=self.request.user, recipe=OuterRef('id')))
+                        ).select_related('author').prefetch_related(
+                            'tags', 'ingredients', 'recipe',
+                            'shopping_cart', 'favorite_recipe')
+        else:
+            return Recipe.objects.annotate(
+                is_in_shopping_cart=Value(False),
+                is_favorited=Value(False),
+                    ).select_related('author').prefetch_related(
+                    'tags', 'ingredients', 'recipe',
+                    'shopping_cart', 'favorite_recipe')
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -220,50 +218,51 @@ class RecipesViewSet(viewsets.ModelViewSet):
         methods=['get'],
         permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        """Качаем список с ингредиентами."""
+        """Скачать рецепт."""
 
         buffer = io.BytesIO()
         page = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))
+        pdfmetrics.registerFont(TTFont('Courier', 'Courier.ttf'))
         x_position, y_position = 50, 800
+        page.setFont('Courier', 14)
         shopping_cart = (
             request.user.shopping_cart.recipe.
             values(
                 'ingredients__name',
                 'ingredients__measurement_unit'
-            ).annotate(amount=Sum('recipe__amount')).order_by())
-        page.setFont('Vera', 14)
-        if shopping_cart:
-            indent = 20
-            page.drawString(x_position, y_position, 'Cписок покупок:')
-            for index, recipe in enumerate(shopping_cart, start=1):
-                page.drawString(
-                    x_position, y_position - indent,
-                    f'{index}. {recipe["ingredients__name"]} - '
-                    f'{recipe["amount"]} '
-                    f'{recipe["ingredients__measurement_unit"]}.')
-                y_position -= 15
-                if y_position <= 50:
-                    page.showPage()
-                    y_position = 800
+            ).annotate(amount=Sum('recipe__amount')))
+
+        if not shopping_cart:
+            page.setFont('Courier', 24)
+            page.drawString(
+                x_position,
+                y_position,
+                'Cписок покупок пуст!')
             page.save()
             buffer.seek(0)
             return FileResponse(
-                buffer, as_attachment=True, filename=FILENAME)
-        page.setFont('Vera', 24)
-        page.drawString(
-            x_position,
-            y_position,
-            'Cписок покупок пуст!')
-        page.save()
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename=FILENAME)
+                buffer, as_attachment=True, filename=s.FILENAME)
+        indent = 20
+        page.drawString(x_position, y_position, 'Cписок покупок:')
+        for index, recipe in enumerate(shopping_cart, start=1):
+            page.drawString(
+                x_position, y_position - indent,
+                f'{index}. {recipe["ingredients__name"]} - '
+                f'{recipe["amount"]} '
+                f'{recipe["ingredients__measurement_unit"]}.')
+            y_position -= 15
+            if y_position <= 50:
+                page.showPage()
+                y_position = 800
+            page.save()
+            buffer.seek(0)
+            return FileResponse(
+                buffer, as_attachment=True, filename=s.FILENAME)
 
 
 class TagsViewSet(
         PermissionAndPaginationMixin,
         viewsets.ModelViewSet):
-    """Список тэгов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -272,7 +271,6 @@ class TagsViewSet(
 class IngredientsViewSet(
         PermissionAndPaginationMixin,
         viewsets.ModelViewSet):
-    """Список ингредиентов."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -286,11 +284,8 @@ def set_password(request):
     serializer = UserPasswordSerializer(
         data=request.data,
         context={'request': request})
-    if serializer.is_valid():
-        serializer.save()
-        return Response(
-            {'message': 'Пароль изменен!'},
-            status=status.HTTP_201_CREATED)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     return Response(
-        {'error': 'Введите верные данные!'},
-        status=status.HTTP_400_BAD_REQUEST)
+            {'message': 'Ваш пароль успешно изменен'},
+            status=status.HTTP_201_CREATED)
