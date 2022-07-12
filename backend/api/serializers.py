@@ -325,9 +325,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(
         source='author.last_name'
     )
-    recipes = serializers.SerializerMethodField(
-        method_name='recipe'
-    )
+    recipes = serializers.SerializerMethodField()
     is_subscribed = serializers.BooleanField(
         read_only=True
     )
