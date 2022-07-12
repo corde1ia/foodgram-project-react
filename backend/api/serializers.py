@@ -163,7 +163,6 @@ class RecipeUserSerializer(
         serializers.ModelSerializer):
 
     is_subscribed = serializers.SerializerMethodField(
-        method_name='subscription',
         read_only=True
     )
 
