@@ -38,7 +38,7 @@ class GetObjectMixin:
     """Миксин для удаления или добавления избранных рецептов или в корзину."""
 
     serializer_class = SubscribeRecipeSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         recipe_id = self.kwargs['recipe_id']
