@@ -209,6 +209,53 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'tags', 'ingredients', 'recipe',
             'shopping_cart', 'favorite_recipe')
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request):
+        """Качаем список с ингредиентами."""
+
+        buffer = io.BytesIO()
+        page = canvas.Canvas(buffer)
+        pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))
+        x_position, y_position = 50, 800
+        shopping_cart = (
+            request.user.shopping_cart.recipe.
+            values(
+                'ingredients__name',
+                'ingredients__measurement_unit'
+            ).annotate(amount=Sum('recipe__amount')).order_by())
+        page.setFont('Vera', 14)
+        if shopping_cart:
+            indent = 20
+            page.drawString(x_position, y_position, 'Cписок покупок:')
+            for index, recipe in enumerate(shopping_cart, start=1):
+                page.drawString(
+                    x_position, y_position - indent,
+                    f'{index}. {recipe["ingredients__name"]} - '
+                    f'{recipe["amount"]} '
+                    f'{recipe["ingredients__measurement_unit"]}.')
+                y_position -= 15
+                if y_position <= 50:
+                    page.showPage()
+                    y_position = 800
+            page.save()
+            buffer.seek(0)
+            return FileResponse(
+                buffer, as_attachment=True, filename=s.FILENAME)
+        page.setFont('Vera', 24)
+        page.drawString(
+            x_position,
+            y_position,
+            'Cписок покупок пуст!')
+        page.save()
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename=s.FILENAME)
+
     # def get_queryset(self):
     #     if self.request.user.is_authenticated:
     #         return Recipe.objects.annotate(
@@ -229,54 +276,54 @@ class RecipesViewSet(viewsets.ModelViewSet):
     #                 'tags', 'ingredients', 'recipe',
     #                 'shopping_cart', 'favorite_recipe')
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    # def perform_create(self, serializer):
+    #     serializer.save(author=self.request.user)
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=(IsAuthenticated,))
-    def download_shopping_cart(self, request):
-        """Скачать рецепт."""
+    # @action(
+    #     detail=False,
+    #     methods=['get'],
+    #     permission_classes=(IsAuthenticated,))
+    # def download_shopping_cart(self, request):
+    #     """Скачать рецепт."""
 
-        buffer = io.BytesIO()
-        page = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Courier', 'Courier.ttf'))
-        x_position, y_position = 50, 800
-        page.setFont('Courier', 14)
-        shopping_cart = (
-            request.user.shopping_cart.recipe.
-            values(
-                'ingredients__name',
-                'ingredients__measurement_unit'
-            ).annotate(amount=Sum('recipe__amount')))
+    #     buffer = io.BytesIO()
+    #     page = canvas.Canvas(buffer)
+    #     pdfmetrics.registerFont(TTFont('Courier', 'Courier.ttf'))
+    #     x_position, y_position = 50, 800
+    #     page.setFont('Courier', 14)
+    #     shopping_cart = (
+    #         request.user.shopping_cart.recipe.
+    #         values(
+    #             'ingredients__name',
+    #             'ingredients__measurement_unit'
+    #         ).annotate(amount=Sum('recipe__amount')))
 
-        if not shopping_cart:
-            page.setFont('Courier', 24)
-            page.drawString(
-                x_position,
-                y_position,
-                'Cписок покупок пуст!')
-            page.save()
-            buffer.seek(0)
-            return FileResponse(
-                buffer, as_attachment=True, filename=s.FILENAME)
-        indent = 20
-        page.drawString(x_position, y_position, 'Cписок покупок:')
-        for index, recipe in enumerate(shopping_cart, start=1):
-            page.drawString(
-                x_position, y_position - indent,
-                f'{index}. {recipe["ingredients__name"]} - '
-                f'{recipe["amount"]} '
-                f'{recipe["ingredients__measurement_unit"]}.')
-            y_position -= 15
-            if y_position <= 50:
-                page.showPage()
-                y_position = 800
-            page.save()
-            buffer.seek(0)
-            return FileResponse(
-                buffer, as_attachment=True, filename=s.FILENAME)
+    #     if not shopping_cart:
+    #         page.setFont('Courier', 24)
+    #         page.drawString(
+    #             x_position,
+    #             y_position,
+    #             'Cписок покупок пуст!')
+    #         page.save()
+    #         buffer.seek(0)
+    #         return FileResponse(
+    #             buffer, as_attachment=True, filename=s.FILENAME)
+    #     indent = 20
+    #     page.drawString(x_position, y_position, 'Cписок покупок:')
+    #     for index, recipe in enumerate(shopping_cart, start=1):
+    #         page.drawString(
+    #             x_position, y_position - indent,
+    #             f'{index}. {recipe["ingredients__name"]} - '
+    #             f'{recipe["amount"]} '
+    #             f'{recipe["ingredients__measurement_unit"]}.')
+    #         y_position -= 15
+    #         if y_position <= 50:
+    #             page.showPage()
+    #             y_position = 800
+    #         page.save()
+    #         buffer.seek(0)
+    #         return FileResponse(
+    #             buffer, as_attachment=True, filename=s.FILENAME)
 
 
 class TagsViewSet(
