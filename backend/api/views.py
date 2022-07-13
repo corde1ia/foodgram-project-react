@@ -19,8 +19,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.permissions import (SAFE_METHODS, AllowAny,
-                                        IsAuthenticated)
-# IsAuthenticatedOrReadOnly)
+                                        IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly
@@ -38,7 +38,7 @@ class GetObjectMixin:
     """Миксин для удаления или добавления избранных рецептов или в корзину."""
 
     serializer_class = SubscribeRecipeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
     def get_object(self):
         recipe_id = self.kwargs['recipe_id']
@@ -183,7 +183,7 @@ class UsersViewSet(UserViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
 
     filterset_class = RecipeFilter
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
