@@ -295,5 +295,5 @@ def set_password(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(
-            {'message': 'Ваш пароль успешно изменен'},
+            {'message': 'Ваш пароль был успешно изменен'},
             status=status.HTTP_201_CREATED)
