@@ -118,13 +118,9 @@ class AddDeleteShoppingCart(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.is_authenticated():
-            request.user.shopping_cart.recipe.add(instance)
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(
-                {'errors': 'Необходимо авторизоваться'},
-                status=status.HTTP_400_BAD_REQUEST)
+        request.user.shopping_cart.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         self.request.user.shopping_cart.recipe.remove(instance)
