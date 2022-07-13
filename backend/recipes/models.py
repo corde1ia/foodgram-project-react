@@ -188,7 +188,6 @@ class FavoriteRecipe(models.Model):
         return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
 
 
-
 class ShoppingCart(models.Model):
     user = models.OneToOneField(
         User,
