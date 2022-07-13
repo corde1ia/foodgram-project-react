@@ -2,7 +2,6 @@ import io
 from foodgram import settings as s
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.db.models.aggregates import Count, Sum
 from django.db.models.expressions import Exists, OuterRef, Value
@@ -111,7 +110,6 @@ class AddDeleteFavoriteRecipe(
         self.request.user.favorite_recipe.recipe.remove(instance)
 
 
-@login_required
 class AddDeleteShoppingCart(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
