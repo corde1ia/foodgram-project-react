@@ -109,7 +109,7 @@ class AddDeleteFavoriteRecipe(
     def perform_destroy(self, instance):
         self.request.user.favorite_recipe.recipe.remove(instance)
 
-
+@login_required
 class AddDeleteShoppingCart(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
