@@ -182,7 +182,6 @@ class UsersViewSet(UserViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
 
-    queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
 

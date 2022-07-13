@@ -187,8 +187,8 @@ class FavoriteRecipe(models.Model):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
 
-    def create_favorite_recipe(self, user, instance, **kwargs):
-        return FavoriteRecipe.objects.create(user=instance)
+    # def create_favorite_recipe(self, user, instance, **kwargs):
+    #     return FavoriteRecipe.objects.create(user=instance)
 
 
 class ShoppingCart(models.Model):
@@ -214,5 +214,5 @@ class ShoppingCart(models.Model):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил список {list_} в покупки.'
 
-    def create_shopping_cart(self, instance, **kwargs):
-        return ShoppingCart.objects.create(user=instance)
+    # def create_shopping_cart(self, instance, **kwargs):
+    #     return ShoppingCart.objects.create(user=instance)
