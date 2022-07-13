@@ -230,9 +230,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         buffer = io.BytesIO()
         page = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))
+        pdfmetrics.registerFont(TTFont('TNR', 'times.ttf'))
         x_position, y_position = 50, 800
-        page.setFont('Vera', 14)
+        page.setFont('TNR', 14)
         shopping_cart = (
             request.user.shopping_cart.recipe.
             values(
@@ -241,7 +241,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             ).annotate(amount=Sum('recipe__amount')))
 
         if not shopping_cart:
-            page.setFont('Vera', 24)
+            page.setFont('TNR', 24)
             page.drawString(
                 x_position,
                 y_position,
