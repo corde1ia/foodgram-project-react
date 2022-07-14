@@ -126,7 +126,7 @@ class AddDeleteShoppingCart(
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(
                 {'errors': 'Необходимо авторизоваться'},
-                status=status.HTTP_403_BAD_REQUEST)
+                status=status.HTTP_401_UNAUTHORIZED)
 
     def perform_destroy(self, instance):
         self.request.user.shopping_cart.recipe.remove(instance)
