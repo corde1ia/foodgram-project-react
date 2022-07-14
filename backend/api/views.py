@@ -129,9 +129,13 @@ class AddDeleteFavoriteRecipe(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        request.user.favorite_recipe.recipe.add(instance)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.user.is_authenticated:
+            request.user.favorite_recipe.recipe.add(instance)
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+                {'errors': 'Необходимо авторизоваться'},
+                status=status.HTTP_400_unauthorized)
 
     # def create(self, request, *args, **kwargs):
     #     instance = self.get_object()
