@@ -99,7 +99,6 @@ class AddDeleteFavoriteRecipe(
     """Добавление и удаление рецепта в/из избранных."""
 
     serializer_class = SubscribeRecipeSerializer
-    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user = self.request.user
