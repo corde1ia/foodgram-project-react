@@ -100,7 +100,7 @@ class AddDeleteFavoriteRecipe(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из избранных."""
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -120,7 +120,7 @@ class AddDeleteShoppingCart(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из корзины."""
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly)
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
