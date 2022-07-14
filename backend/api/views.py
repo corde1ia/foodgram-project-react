@@ -102,16 +102,14 @@ class AddDeleteFavoriteRecipe(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        if self.request.user.is_authenticated:
-            request.user.favorite_recipe.recipe.add(instance)
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(
-                {'errors': 'Необходимо авторизоваться'},
-                status=status.HTTP_403_BAD_REQUEST)
+        user = self.request.user
+        user.favorite_recipe.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
-        self.request.user.favorite_recipe.recipe.remove(instance)
+        user = self.request.user
+        user.favorite_recipe.recipe.remove(instance)
 
 
 class AddDeleteShoppingCart(
