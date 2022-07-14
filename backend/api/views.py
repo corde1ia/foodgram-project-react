@@ -100,6 +100,8 @@ class AddDeleteFavoriteRecipe(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из избранных."""
 
+    permission_classes = (IsAuthenticated,)
+
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
         user = self.request.user
@@ -118,19 +120,18 @@ class AddDeleteShoppingCart(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из корзины."""
 
+    permission_classes = (IsAuthenticated,)
+
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
         user = self.request.user
-        if user.is_authenticated:
-            user.shopping_cart.recipe.add(instance)
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(
-                {'errors': 'Необходимо авторизоваться'},
-                status=status.HTTP_401_UNAUTHORIZED)
+        user.shopping_cart.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
-        self.request.user.shopping_cart.recipe.remove(instance)
+        user = self.request.user
+        user.shopping_cart.recipe.remove(instance)
 
 
 class AuthToken(ObtainAuthToken):
