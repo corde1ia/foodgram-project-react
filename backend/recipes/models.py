@@ -166,10 +166,10 @@ class Subscribe(models.Model):
 
 
 class FavoriteRecipe(models.Model):
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        null=True,
+        null=False,
         related_name='favorite_recipe',
         verbose_name='Пользователь'
     )
