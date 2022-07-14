@@ -33,17 +33,18 @@ from foodgram import settings as s
 
 User = get_user_model()
 
-# class GetObjectMixin:
-#    Миксин для удаления или добавления избранных рецептов или в корзину."""
 
-#     serializer_class = SubscribeRecipeSerializer
-#     permission_classes = (IsAuthenticatedOrReadOnly,)
+class GetObjectMixin:
+    """Миксин для удаления или добавления избранных рецептов или в корзину."""
 
-#     def get_object(self):
-#         recipe_id = self.kwargs['recipe_id']
-#         recipe = get_object_or_404(Recipe, id=recipe_id)
-#         self.check_object_permissions(self.request, recipe)
-#         return recipe
+    serializer_class = SubscribeRecipeSerializer
+    permission_classes = (AllowAny,)
+
+    def get_object(self):
+        recipe_id = self.kwargs['recipe_id']
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        self.check_object_permissions(self.request, recipe)
+        return recipe
 
 
 class PermissionAndPaginationMixin:
@@ -93,40 +94,22 @@ class AddAndDeleteSubscribe(
         self.request.user.follower.filter(author=instance).delete()
 
 
-class AddDeleteFavoriteRecipe(
-        generics.RetrieveDestroyAPIView,
-        generics.ListCreateAPIView):
-    """Добавление и удаление рецепта в/из избранных."""
-
-    serializer_class = SubscribeRecipeSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        return user.favorite_recipe.recipe
-
-    def get_object(self):
-        recipe_id = self.kwargs['recipe_id']
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
-
-    def create(self, request, *args, **kwargs):
-        instance = self.get_object()
-        request.user.favorite_recipe.recipe.add(instance)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def perform_destroy(self, instance):
-        self.request.user.favorite_recipe.recipe.remove(instance)
-
-
 # class AddDeleteFavoriteRecipe(
-#         GetObjectMixin,
 #         generics.RetrieveDestroyAPIView,
 #         generics.ListCreateAPIView):
-#     """Добавление и удаление рецепта из избранных."""
+#     """Добавление и удаление рецепта в/из избранных."""
 
-#     permission_classes = (IsAuthenticatedOrReadOnly,)
+#     serializer_class = SubscribeRecipeSerializer
+
+#     def get_queryset(self):
+#         user = self.request.user
+#         return user.favorite_recipe.recipe
+
+#     def get_object(self):
+#         recipe_id = self.kwargs['recipe_id']
+#         recipe = get_object_or_404(Recipe, id=recipe_id)
+#         self.check_object_permissions(self.request, recipe)
+#         return recipe
 
 #     def create(self, request, *args, **kwargs):
 #         instance = self.get_object()
@@ -136,6 +119,22 @@ class AddDeleteFavoriteRecipe(
 
 #     def perform_destroy(self, instance):
 #         self.request.user.favorite_recipe.recipe.remove(instance)
+
+
+class AddDeleteFavoriteRecipe(
+        GetObjectMixin,
+        generics.RetrieveDestroyAPIView,
+        generics.ListCreateAPIView):
+    """Добавление и удаление рецепта из избранных."""
+
+    def create(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.user.favorite_recipe.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance):
+        self.request.user.favorite_recipe.recipe.remove(instance)
 
 
 class AddDeleteShoppingCart(
@@ -238,9 +237,7 @@ class UsersViewSet(UserViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
-    """Рецепты."""
 
-    queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
@@ -250,23 +247,24 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return RecipeAddSerializer
 
     def get_queryset(self):
-        return Recipe.objects.annotate(
-            is_favorited=Exists(
-                FavoriteRecipe.objects.filter(
-                    user=self.request.user, recipe=OuterRef('id'))),
-            is_in_shopping_cart=Exists(
-                ShoppingCart.objects.filter(
-                    user=self.request.user,
-                    recipe=OuterRef('id')))
-        ).select_related('author').prefetch_related(
-            'tags', 'ingredients', 'recipe',
-            'shopping_cart', 'favorite_recipe'
-        ) if self.request.user.is_authenticated else Recipe.objects.annotate(
-            is_in_shopping_cart=Value(False),
-            is_favorited=Value(False),
-        ).select_related('author').prefetch_related(
-            'tags', 'ingredients', 'recipe',
-            'shopping_cart', 'favorite_recipe')
+        if self.request.user.is_authenticated:
+            return Recipe.objects.annotate(
+                is_favorited=Exists(
+                    FavoriteRecipe.objects.filter(
+                        user=self.request.user, recipe=OuterRef('id'))),
+                is_in_shopping_cart=Exists(
+                    ShoppingCart.objects.filter(
+                        user=self.request.user, recipe=OuterRef('id')))
+                        ).select_related('author').prefetch_related(
+                            'tags', 'ingredients', 'recipe',
+                            'shopping_cart', 'favorite_recipe')
+        else:
+            return Recipe.objects.annotate(
+                is_in_shopping_cart=Value(False),
+                is_favorited=Value(False),
+                    ).select_related('author').prefetch_related(
+                    'tags', 'ingredients', 'recipe',
+                    'shopping_cart', 'favorite_recipe')
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -276,124 +274,46 @@ class RecipesViewSet(viewsets.ModelViewSet):
         methods=['get'],
         permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        """Качаем список с ингредиентами."""
+        """Скачать рецепт."""
 
         buffer = io.BytesIO()
         page = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))
+        pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
         x_position, y_position = 50, 800
+        page.setFont('DejaVuSans', 14)
         shopping_cart = (
             request.user.shopping_cart.recipe.
             values(
                 'ingredients__name',
                 'ingredients__measurement_unit'
-            ).annotate(amount=Sum('recipe__amount')).order_by())
-        page.setFont('Vera', 14)
-        if shopping_cart:
-            indent = 20
-            page.drawString(x_position, y_position, 'Cписок покупок:')
-            for index, recipe in enumerate(shopping_cart, start=1):
-                page.drawString(
-                    x_position, y_position - indent,
-                    f'{index}. {recipe["ingredients__name"]} - '
-                    f'{recipe["amount"]} '
-                    f'{recipe["ingredients__measurement_unit"]}.')
-                y_position -= 15
-                if y_position <= 50:
-                    page.showPage()
-                    y_position = 800
+            ).annotate(amount=Sum('recipe__amount')))
+
+        if not shopping_cart:
+            page.setFont('DejaVuSans', 24)
+            page.drawString(
+                x_position,
+                y_position,
+                'Cписок покупок пуст!')
             page.save()
             buffer.seek(0)
             return FileResponse(
                 buffer, as_attachment=True, filename=s.FILENAME)
-        page.setFont('Vera', 24)
-        page.drawString(
-            x_position,
-            y_position,
-            'Cписок покупок пуст!')
-        page.save()
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename=s.FILENAME)
-
-
-# class RecipesViewSet(viewsets.ModelViewSet):
-
-#     filterset_class = RecipeFilter
-#     permission_classes = (IsAuthenticatedOrReadOnly,)
-
-#     def get_serializer_class(self):
-#         if self.request.method in SAFE_METHODS:
-#             return RecipeReadSerializer
-#         return RecipeAddSerializer
-
-#     def get_queryset(self):
-#         if self.request.user.is_authenticated:
-#             return Recipe.objects.annotate(
-#                 is_favorited=Exists(
-#                     FavoriteRecipe.objects.filter(
-#                         user=self.request.user, recipe=OuterRef('id'))),
-#                 is_in_shopping_cart=Exists(
-#                     ShoppingCart.objects.filter(
-#                         user=self.request.user, recipe=OuterRef('id')))
-#                         ).select_related('author').prefetch_related(
-#                             'tags', 'ingredients', 'recipe',
-#                             'shopping_cart', 'favorite_recipe')
-#         else:
-#             return Recipe.objects.annotate(
-#                 is_in_shopping_cart=Value(False),
-#                 is_favorited=Value(False),
-#                     ).select_related('author').prefetch_related(
-#                     'tags', 'ingredients', 'recipe',
-#                     'shopping_cart', 'favorite_recipe')
-
-#     def perform_create(self, serializer):
-#         serializer.save(author=self.request.user)
-
-#     @action(
-#         detail=False,
-#         methods=['get'],
-#         permission_classes=(IsAuthenticated,))
-#     def download_shopping_cart(self, request):
-#         """Скачать рецепт."""
-
-#         buffer = io.BytesIO()
-#         page = canvas.Canvas(buffer)
-#         pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
-#         x_position, y_position = 50, 800
-#         page.setFont('DejaVuSans', 14)
-#         shopping_cart = (
-#             request.user.shopping_cart.recipe.
-#             values(
-#                 'ingredients__name',
-#                 'ingredients__measurement_unit'
-#             ).annotate(amount=Sum('recipe__amount')))
-
-#         if not shopping_cart:
-#             page.setFont('DejaVuSans', 24)
-#             page.drawString(
-#                 x_position,
-#                 y_position,
-#                 'Cписок покупок пуст!')
-#             page.save()
-#             buffer.seek(0)
-#             return FileResponse(
-#                 buffer, as_attachment=True, filename=s.FILENAME)
-#         indent = 20
-#         page.drawString(x_position, y_position, 'Cписок покупок:')
-#         for index, recipe in enumerate(shopping_cart, start=1):
-#             page.drawString(
-#                 x_position, y_position - indent,
-#                 f'{index}. {recipe["ingredients__name"]} - '
-#                 f'{recipe["amount"]} '
-#                 f'{recipe["ingredients__measurement_unit"]}.')
-#             y_position -= 15
-#             if y_position <= 50:
-#                 page.showPage()
-#                 y_position = 800
-#             page.save()
-#             buffer.seek(0)
-#             return FileResponse(
-#                 buffer, as_attachment=True, filename=s.FILENAME)
+        indent = 20
+        page.drawString(x_position, y_position, 'Cписок покупок:')
+        for index, recipe in enumerate(shopping_cart, start=1):
+            page.drawString(
+                x_position, y_position - indent,
+                f'{index}. {recipe["ingredients__name"]} - '
+                f'{recipe["amount"]} '
+                f'{recipe["ingredients__measurement_unit"]}.')
+            y_position -= 15
+            if y_position <= 50:
+                page.showPage()
+                y_position = 800
+            page.save()
+            buffer.seek(0)
+            return FileResponse(
+                buffer, as_attachment=True, filename=s.FILENAME)
 
 
 class TagsViewSet(
