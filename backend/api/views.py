@@ -127,14 +127,23 @@ class AddDeleteFavoriteRecipe(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из избранных."""
 
+    # def create(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     request.user.favorite_recipe.recipe.add(instance)
+    #     serializer = self.get_serializer(instance)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        request.user.favorite_recipe.recipe.add(instance)
-        serializer = self.get_serializer(instance)
+        fav = request.user.favorite_recipe.create(instance)
+        serializer = self.get_serializer(fav)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    # def perform_destroy(self, instance):
+    #     self.request.user.favorite_recipe.recipe.remove(instance)
+
     def perform_destroy(self, instance):
-        self.request.user.favorite_recipe.recipe.remove(instance)
+        self.request.user.favorite_recipe.filter(instance).delete()
 
 
 class AddDeleteShoppingCart(

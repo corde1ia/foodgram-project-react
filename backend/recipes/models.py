@@ -187,7 +187,7 @@ class FavoriteRecipe(models.Model):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
 
-    def create_favorite_recipe(instance, **kwargs):
+    def create_favorite_recipe(self, instance, **kwargs):
         return FavoriteRecipe.objects.create(user=instance)
 
 
