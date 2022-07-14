@@ -113,12 +113,12 @@ class AddDeleteFavoriteRecipe(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        request.user.recipe.favorite_recipe.add(instance)
+        request.user.favorite_recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
-        self.request.user.recipe.favorite_recipe.remove(instance)
+        self.request.user.favorite_recipe.remove(instance)
 
 
 # class AddDeleteFavoriteRecipe(
