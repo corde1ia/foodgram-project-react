@@ -120,8 +120,9 @@ class AddDeleteShoppingCart(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        if self.request.user.is_authenticated:
-            request.user.shopping_cart.recipe.add(instance)
+        user = self.request.user
+        if user.is_authenticated:
+            user.shopping_cart.recipe.add(instance)
             serializer = self.get_serializer(instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(
