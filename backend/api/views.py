@@ -120,7 +120,7 @@ class AddDeleteShoppingCart(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из корзины."""
 
-    permission_classes = (IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
