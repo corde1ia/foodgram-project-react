@@ -34,7 +34,7 @@ from foodgram import settings as s
 User = get_user_model()
 
 # class GetObjectMixin:
-#     """Миксин для удаления или добавления избранных рецептов или в корзину."""
+#    Миксин для удаления или добавления избранных рецептов или в корзину."""
 
 #     serializer_class = SubscribeRecipeSerializer
 #     permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -101,7 +101,6 @@ class AddDeleteFavoriteRecipe(
     serializer_class = SubscribeRecipeSerializer
     permission_classes = (IsAuthenticated,)
 
-
     def get_queryset(self):
         user = self.request.user
         return user.favorite_recipe
@@ -141,7 +140,6 @@ class AddDeleteFavoriteRecipe(
 
 
 class AddDeleteShoppingCart(
-        GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из корзины."""
