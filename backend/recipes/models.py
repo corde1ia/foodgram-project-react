@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from foodgram import settings as s
-
 
 User = get_user_model()
 
@@ -187,8 +188,14 @@ class FavoriteRecipe(models.Model):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
 
-    def create_favorite_recipe(self, instance, **kwargs):
-        return FavoriteRecipe.objects.create(user=instance)
+    # def create_favorite_recipe(self, instance, **kwargs):
+    #     return FavoriteRecipe.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def create_favorite_recipe(
+            sender, instance, created, **kwargs):
+        if created:
+            return FavoriteRecipe.objects.create(user=instance)
 
 
 class ShoppingCart(models.Model):
