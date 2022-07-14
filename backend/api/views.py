@@ -33,18 +33,17 @@ from foodgram import settings as s
 
 User = get_user_model()
 
+# class GetObjectMixin:
+#     """Миксин для удаления или добавления избранных рецептов или в корзину."""
 
-class GetObjectMixin:
-    """Миксин для удаления или добавления избранных рецептов или в корзину."""
+#     serializer_class = SubscribeRecipeSerializer
+#     permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    serializer_class = SubscribeRecipeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-
-    def get_object(self):
-        recipe_id = self.kwargs['recipe_id']
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
+#     def get_object(self):
+#         recipe_id = self.kwargs['recipe_id']
+#         recipe = get_object_or_404(Recipe, id=recipe_id)
+#         self.check_object_permissions(self.request, recipe)
+#         return recipe
 
 
 class PermissionAndPaginationMixin:
@@ -95,12 +94,23 @@ class AddAndDeleteSubscribe(
 
 
 class AddDeleteFavoriteRecipe(
-        GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Добавление и удаление рецепта из избранных."""
+    """Добавление и удаление рецепта в/из избранных."""
 
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = SubscribeRecipeSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.favorite_recipe
+
+    def get_object(self):
+        recipe_id = self.kwargs['recipe_id']
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        self.check_object_permissions(self.request, recipe)
+        return recipe
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -110,6 +120,24 @@ class AddDeleteFavoriteRecipe(
 
     def perform_destroy(self, instance):
         self.request.user.favorite_recipe.recipe.remove(instance)
+
+
+# class AddDeleteFavoriteRecipe(
+#         GetObjectMixin,
+#         generics.RetrieveDestroyAPIView,
+#         generics.ListCreateAPIView):
+#     """Добавление и удаление рецепта из избранных."""
+
+#     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+#     def create(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         request.user.favorite_recipe.recipe.add(instance)
+#         serializer = self.get_serializer(instance)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+#     def perform_destroy(self, instance):
+#         self.request.user.favorite_recipe.recipe.remove(instance)
 
 
 class AddDeleteShoppingCart(
