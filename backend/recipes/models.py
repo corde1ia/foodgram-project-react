@@ -191,11 +191,11 @@ class FavoriteRecipe(models.Model):
     # def create_favorite_recipe(self, instance, **kwargs):
     #     return FavoriteRecipe.objects.create(user=instance)
 
-    @receiver(post_save, sender=User)
-    def create_favorite_recipe(
-            sender, instance, created, **kwargs):
-        if created:
-            return FavoriteRecipe.objects.create(user=instance)
+    # @receiver(post_save, sender=User)
+    # def create_favorite_recipe(
+    #         sender, instance, created, **kwargs):
+    #     if created:
+    #         return FavoriteRecipe.objects.create(user=instance)
 
 
 class ShoppingCart(models.Model):
