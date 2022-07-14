@@ -104,14 +104,12 @@ class AddDeleteFavoriteRecipe(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        user = self.request.user
-        user.favorite_recipe.recipe.add(instance)
+        request.user.favorite_recipe.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
-        user = self.request.user
-        user.favorite_recipe.recipe.remove(instance)
+        self.request.user.favorite_recipe.recipe.remove(instance)
 
 
 class AddDeleteShoppingCart(
@@ -124,14 +122,12 @@ class AddDeleteShoppingCart(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        user = self.request.user
-        user.shopping_cart.recipe.add(instance)
+        request.user.shopping_cart.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
-        user = self.request.user
-        user.shopping_cart.recipe.remove(instance)
+        self.request.user.shopping_cart.recipe.remove(instance)
 
 
 class AuthToken(ObtainAuthToken):
