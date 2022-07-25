@@ -38,7 +38,7 @@ class GetObjectMixin:
     """Миксин для удаления или добавления избранных рецептов или в корзину."""
 
     serializer_class = SubscribeRecipeSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_object(self):
         recipe_id = self.kwargs['recipe_id']
@@ -129,13 +129,25 @@ class AddDeleteFavoriteRecipe(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.is_authenticated:
-            request.user.favorite_recipe.recipe.add(instance)
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(
-                {'errors': 'Необходимо авторизоваться'},
-                status=status.HTTP_401_UNAUTHORIZED)
+        request.user.favorite_recipe.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # def create(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     fav = request.user.favorite_recipe.create(instance)
+    #     serializer = self.get_serializer(fav)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # def create(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     if request.user.is_authenticated:
+    #         request.user.favorite_recipe.recipe.add(instance)
+    #         serializer = self.get_serializer(instance)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(
+    #             {'errors': 'Необходимо авторизоваться'},
+    #             status=status.HTTP_401_UNAUTHORIZED)
 
     # def create(self, request, *args, **kwargs):
     #     instance = self.get_object()
@@ -149,41 +161,29 @@ class AddDeleteFavoriteRecipe(
     # def perform_destroy(self, instance):
     #     self.request.user.favorite_recipe.filter(instance).delete()
 
-
-class AddDeleteShoppingCart(
-        generics.RetrieveDestroyAPIView,
-        generics.ListCreateAPIView):
-    """Добавление и удаление рецепта в/из избранных."""
-
-    serializer_class = SubscribeRecipeSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        user = self.request.user
-        return user.favorite_recipe
-
-    def get_object(self):
-        recipe_id = self.kwargs['recipe_id']
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
-
-    def create(self, request, *args, **kwargs):
-        instance = self.get_object()
-        request.user.shopping_cart.recipe.add(instance)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def perform_destroy(self, instance):
-        self.request.user.shopping_cart.recipe.remove(instance)
+    # def perform_destroy(self, instance):
+    #     user = self.request.user
+    #     instance = self.get_object()
+    #     user.favorite_recipe.recipe.remove(instance)
 
 
 # class AddDeleteShoppingCart(
 #         generics.RetrieveDestroyAPIView,
 #         generics.ListCreateAPIView):
-#     """Добавление и удаление рецепта из корзины."""
+#     """Добавление и удаление рецепта в/из избранных."""
 
-#     permission_classes = (IsAuthenticatedOrReadOnly,)
+#     serializer_class = SubscribeRecipeSerializer
+#     permission_classes = (IsAuthenticated,)
+
+#     def get_queryset(self):
+#         user = self.request.user
+#         return user.favorite_recipe
+
+#     def get_object(self):
+#         recipe_id = self.kwargs['recipe_id']
+#         recipe = get_object_or_404(Recipe, id=recipe_id)
+#         self.check_object_permissions(self.request, recipe)
+#         return recipe
 
 #     def create(self, request, *args, **kwargs):
 #         instance = self.get_object()
@@ -193,6 +193,22 @@ class AddDeleteShoppingCart(
 
 #     def perform_destroy(self, instance):
 #         self.request.user.shopping_cart.recipe.remove(instance)
+
+
+class AddDeleteShoppingCart(
+        GetObjectMixin,
+        generics.RetrieveDestroyAPIView,
+        generics.ListCreateAPIView):
+    """Добавление и удаление рецепта из корзины."""
+
+    def create(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.user.shopping_cart.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance):
+        self.request.user.shopping_cart.recipe.remove(instance)
 
 
 class AuthToken(ObtainAuthToken):

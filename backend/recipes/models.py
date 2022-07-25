@@ -186,22 +186,17 @@ class FavoriteRecipe(models.Model):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
 
-    # def create_favorite_recipe(self, instance, **kwargs):
-    #     return FavoriteRecipe.objects.create(user=instance)
-
-    # @receiver(post_save, sender=User)
-    # def create_favorite_recipe(
-    #         sender, instance, created, **kwargs):
-    #     if created:
-    #         return FavoriteRecipe.objects.create(user=instance)
+    def create_favorite_recipe(self, instance, **kwargs):
+        user = instance
+        return FavoriteRecipe.objects.get_or_create(user=user)
 
 
 class ShoppingCart(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name='shopping_cart',
         null=True,
+        related_name='shopping_cart',
         verbose_name='Пользователь'
     )
     recipe = models.ManyToManyField(
@@ -218,3 +213,8 @@ class ShoppingCart(models.Model):
     def __str__(self):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил список {list_} в покупки.'
+
+    def create_shopping_cart(self, instance, **kwargs):
+        return ShoppingCart.objects.get_or_create(instance)   
+    
+    
