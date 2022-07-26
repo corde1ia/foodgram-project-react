@@ -186,10 +186,6 @@ class FavoriteRecipe(models.Model):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
 
-    def create_favorite_recipe(self, instance, **kwargs):
-        user = instance
-        return FavoriteRecipe.objects.get_or_create(user=user)
-
 
 class ShoppingCart(models.Model):
     user = models.OneToOneField(
@@ -213,8 +209,3 @@ class ShoppingCart(models.Model):
     def __str__(self):
         list_ = [item['name'] for item in self.recipe.values('name')]
         return f'Пользователь {self.user} добавил список {list_} в покупки.'
-
-    def create_shopping_cart(self, instance, **kwargs):
-        return ShoppingCart.objects.get_or_create(instance)   
-    
-    

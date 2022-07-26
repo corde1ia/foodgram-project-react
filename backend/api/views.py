@@ -1,4 +1,5 @@
 import io
+import re
 from foodgram import settings as s
 
 from django.contrib.auth import get_user_model
@@ -94,105 +95,22 @@ class AddAndDeleteSubscribe(
         self.request.user.follower.filter(author=instance).delete()
 
 
-# class AddDeleteFavoriteRecipe(
-#         generics.RetrieveDestroyAPIView,
-#         generics.ListCreateAPIView):
-#     """Добавление и удаление рецепта в/из избранных."""
-
-#     serializer_class = SubscribeRecipeSerializer
-
-#     def get_queryset(self):
-#         user = self.request.user
-#         return user.favorite_recipe.recipe
-
-#     def get_object(self):
-#         recipe_id = self.kwargs['recipe_id']
-#         recipe = get_object_or_404(Recipe, id=recipe_id)
-#         self.check_object_permissions(self.request, recipe)
-#         return recipe
-
-#     def create(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         request.user.favorite_recipe.recipe.add(instance)
-#         serializer = self.get_serializer(instance)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#     def perform_destroy(self, instance):
-#         self.request.user.favorite_recipe.recipe.remove(instance)
-
-
 class AddDeleteFavoriteRecipe(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из избранных."""
 
+    @action(methods=['post'], detail=False)
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
         request.user.favorite_recipe.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    # def create(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     fav = request.user.favorite_recipe.create(instance)
-    #     serializer = self.get_serializer(fav)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # def create(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     if request.user.is_authenticated:
-    #         request.user.favorite_recipe.recipe.add(instance)
-    #         serializer = self.get_serializer(instance)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(
-    #             {'errors': 'Необходимо авторизоваться'},
-    #             status=status.HTTP_401_UNAUTHORIZED)
-
-    # def create(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     fav = request.user.favorite_recipe.create(instance)
-    #     serializer = self.get_serializer(fav)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+    @action(methods=['delete'], detail=False)
     def perform_destroy(self, instance):
         self.request.user.favorite_recipe.recipe.remove(instance)
-
-    # def perform_destroy(self, instance):
-    #     self.request.user.favorite_recipe.filter(instance).delete()
-
-    # def perform_destroy(self, instance):
-    #     user = self.request.user
-    #     instance = self.get_object()
-    #     user.favorite_recipe.recipe.remove(instance)
-
-
-# class AddDeleteShoppingCart(
-#         generics.RetrieveDestroyAPIView,
-#         generics.ListCreateAPIView):
-#     """Добавление и удаление рецепта в/из избранных."""
-
-#     serializer_class = SubscribeRecipeSerializer
-#     permission_classes = (IsAuthenticated,)
-
-#     def get_queryset(self):
-#         user = self.request.user
-#         return user.favorite_recipe
-
-#     def get_object(self):
-#         recipe_id = self.kwargs['recipe_id']
-#         recipe = get_object_or_404(Recipe, id=recipe_id)
-#         self.check_object_permissions(self.request, recipe)
-#         return recipe
-
-#     def create(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         request.user.shopping_cart.recipe.add(instance)
-#         serializer = self.get_serializer(instance)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#     def perform_destroy(self, instance):
-#         self.request.user.shopping_cart.recipe.remove(instance)
 
 
 class AddDeleteShoppingCart(
@@ -201,12 +119,15 @@ class AddDeleteShoppingCart(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из корзины."""
 
+    @action(methods=['post'], detail=False)
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
+        ShoppingCart.objects.create()
         request.user.shopping_cart.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['delete'], detail=False)
     def perform_destroy(self, instance):
         self.request.user.shopping_cart.recipe.remove(instance)
 
