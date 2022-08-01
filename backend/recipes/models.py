@@ -1,7 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
+from requests import request
 from foodgram import settings as s
+# from django.dispatch import receiver
+# from django.db.models.signals import post_save
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -170,13 +174,11 @@ class FavoriteRecipe(models.Model):
         on_delete=models.CASCADE,
         null=True,
         related_name='favorite_recipe',
-        verbose_name='Пользователь'
-    )
+        verbose_name='Пользователь')
     recipe = models.ManyToManyField(
         Recipe,
         related_name='favorite_recipe',
-        verbose_name='Избранный рецепт'
-    )
+        verbose_name='Избранный рецепт')
 
     class Meta:
         verbose_name = 'Избранный рецепт'
@@ -184,28 +186,26 @@ class FavoriteRecipe(models.Model):
 
     def __str__(self):
         list_ = [item['name'] for item in self.recipe.values('name')]
-        return f'Пользователь {self.user} добавил рецепт {list_} в избранные.'
+        return f'Пользователь {self.user} добавил {list_} в избранные.'
 
 
 class ShoppingCart(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        null=True,
         related_name='shopping_cart',
-        verbose_name='Пользователь'
-    )
+        null=True,
+        verbose_name='Пользователь')
     recipe = models.ManyToManyField(
         Recipe,
         related_name='shopping_cart',
-        verbose_name='Покупка'
-    )
+        verbose_name='Покупка')
 
     class Meta:
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
-        ordering = ('-id',)
+        ordering = ['-id']
 
     def __str__(self):
         list_ = [item['name'] for item in self.recipe.values('name')]
-        return f'Пользователь {self.user} добавил список {list_} в покупки.'
+        return f'Пользователь {self.user} добавил {list_} в покупки.'
