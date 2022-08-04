@@ -1,6 +1,4 @@
-from gettext import install
 import io
-import re
 from foodgram import settings as s
 
 from django.contrib.auth import get_user_model
@@ -35,17 +33,6 @@ from foodgram import settings as s
 
 User = get_user_model()
 
-class CreateModelMixin:
-    """Миксин для добавления объектов в базу."""
-    
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def perform_create(self, serializer):
-        serializer.save()
 
 class GetObjectMixin:
     """Миксин для удаления или добавления избранных рецептов или в корзину."""
