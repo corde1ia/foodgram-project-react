@@ -102,7 +102,8 @@ class AddDeleteFavoriteRecipe(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        fav_item, created = FavoriteRecipe.objects.get_or_create(user=request.user)
+        fav_item, created = FavoriteRecipe.objects.get_or_create(
+            user=request.user)
         request.user.favorite_recipe.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -119,7 +120,8 @@ class AddDeleteShoppingCart(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
-        purchase, created = ShoppingCart.objects.get_or_create(user=request.user)
+        purchase, created = ShoppingCart.objects.get_or_create(
+            user=request.user)
         request.user.shopping_cart.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
