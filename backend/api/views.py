@@ -57,7 +57,7 @@ class PermissionAndPaginationMixin:
 class AddAndDeleteSubscribe(
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Подписка/отписка пользователей."""
+    """Подписка/отписка для пользователей."""
 
     serializer_class = SubscribeSerializer
 
@@ -98,7 +98,7 @@ class AddDeleteFavoriteRecipe(
         GetObjectMixin,
         generics.RetrieveDestroyAPIView,
         generics.ListCreateAPIView):
-    """Добавление и удаление рецепта из избранных."""
+    """Добавление и удаление рецепта из избранного."""
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
