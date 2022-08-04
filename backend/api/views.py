@@ -35,6 +35,17 @@ from foodgram import settings as s
 
 User = get_user_model()
 
+class CreateModelMixin:
+    """Миксин для добавления объектов в базу."""
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save()
 
 class GetObjectMixin:
     """Миксин для удаления или добавления избранных рецептов или в корзину."""
@@ -102,51 +113,15 @@ class AddDeleteFavoriteRecipe(
         generics.ListCreateAPIView):
     """Добавление и удаление рецепта из избранных."""
 
-    # serializer_class = SubscribeRecipeSerializer
-    # permission_classes = (IsAuthenticatedOrReadOnly,)
-
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
+        fav_item, created = FavoriteRecipe.objects.get_or_create(user=request.user)
         request.user.favorite_recipe.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         self.request.user.favorite_recipe.recipe.remove(instance)
-
-    # def get_queryset(self):
-    #     return Recipe.objects.all()
-            #FavoriteRecipe.objects.all()
-
-    # def get_object(self):
-    #     recipe_id = self.kwargs['recipe_id']
-    #     recipe = get_object_or_404(Recipe, id=recipe_id)
-    #     self.check_object_permissions(self.request, recipe)
-    #     return recipe
-    
-    # @action(methods=['post'], detail=False)
-    # def create(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     ShoppingCart.objects.create()
-    #     request.user.favorite_recipe.recipe.add()
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # def perform_destroy(self, instance):
-    #     self.request.user.favorite_recipe.recipe.remove(instance)
-
-    # @action(methods=['post'], detail=False)
-    # def create(self, request, *args, **kwargs):
-    #     recipe_id = self.kwargs['recipe_id']
-    #     recipe = get_object_or_404(Recipe, id=recipe_id)
-    #     # instance = self.get_object()
-    #     request.user.favorite_recipe.add()
-    #     serializer = self.get_serializer(recipe)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # @action(methods=['delete'], detail=False)
-    # def perform_destroy(self, instance):
-    #     self.request.user.favorite_recipe.remove()
 
 
 class AddDeleteShoppingCart(
@@ -157,28 +132,13 @@ class AddDeleteShoppingCart(
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
+        purchase, created = ShoppingCart.objects.get_or_create(user=request.user)
         request.user.shopping_cart.recipe.add(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         self.request.user.shopping_cart.recipe.remove(instance)
-
-    # @action(methods=['post'], detail=True)
-    # def create(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     request.user.shopping_cart.recipe.add(instance)
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # def create(self, request, *args, **kwargs):
-    #     recipe_id = self.kwargs['recipe_id']
-    #     recipe = get_object_or_404(Recipe, id=recipe_id)
-    #     ShoppingCart.objects.create()
-    #     # instance = self.get_object()
-    #     self.request.user.shopping_cart.recipe.add(instance)
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AuthToken(ObtainAuthToken):

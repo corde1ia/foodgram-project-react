@@ -1,11 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
-from requests import request
+
 from foodgram import settings as s
-# from django.dispatch import receiver
-# from django.db.models.signals import post_save
-from django.shortcuts import get_object_or_404
+
 
 User = get_user_model()
 
