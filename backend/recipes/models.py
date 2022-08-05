@@ -167,8 +167,10 @@ class Subscribe(models.Model):
         return f'Пользователь {self.user} подписан на автора {self.author}'
 
     def clean(self):
-        if (self.user.is_superuser or self.user.is_stuff) and self.user == self.author:
-            raise ValidationError('Вы не можете подписать себя на самого себя.')
+        if (self.user.is_superuser
+                or self.user.is_stuff) and self.user == self.author:
+            raise ValidationError(
+                'Вы не можете подписать пользователя на самого себя.')
 
 
 class FavoriteRecipe(models.Model):
