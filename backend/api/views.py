@@ -222,7 +222,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         methods=['get'],
         permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        """Скачать рецепт."""
+        """Скачивание рецепта."""
 
         buffer = io.BytesIO()
         page = canvas.Canvas(buffer)
