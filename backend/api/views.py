@@ -229,6 +229,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
         x_position, y_position = 50, 800
         page.setFont('DejaVuSans', 14)
+
         shopping_cart = (
             request.user.shopping_cart.recipe.
             values(
@@ -246,18 +247,19 @@ class RecipesViewSet(viewsets.ModelViewSet):
             buffer.seek(0)
             return FileResponse(
                 buffer, as_attachment=True, filename=s.FILENAME)
-        indent = 20
-        page.drawString(x_position, y_position, 'Cписок покупок:')
-        for index, recipe in enumerate(shopping_cart, start=1):
-            page.drawString(
-                x_position, y_position - indent,
-                f'{index}. {recipe["ingredients__name"]} - '
-                f'{recipe["amount"]} '
-                f'{recipe["ingredients__measurement_unit"]}.')
-            y_position -= 15
-            if y_position <= 50:
-                page.showPage()
-                y_position = 800
+        else:
+            indent = 20
+            page.drawString(x_position, y_position, 'Cписок покупок:')
+            for index, recipe in enumerate(shopping_cart, start=1):
+                page.drawString(
+                    x_position, y_position - indent,
+                    f'{index}. {recipe["ingredients__name"]} - '
+                    f'{recipe["amount"]} '
+                    f'{recipe["ingredients__measurement_unit"]}.')
+                y_position -= 15
+                if y_position <= 50:
+                    page.showPage()
+                    y_position = 800
             page.save()
             buffer.seek(0)
             return FileResponse(
