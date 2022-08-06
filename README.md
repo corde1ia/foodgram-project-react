@@ -2,10 +2,10 @@
 
 # Продуктовый помощник Foodgram
 
-Проект доступен по адресу http:/51.250.24.222/recipes
-
 ## Описание проекта Foodgram
 «Продуктовый помощник»: приложение, на котором пользователи публикуют рецепты, подписываться на публикации других авторов и добавлять рецепты в избранное. Сервис «Список покупок» позволит пользователю создавать список продуктов, которые нужно купить для приготовления выбранных блюд.
+
+## Проект доступен по адресу http:/158.160.8.223/recipes
 
 ## Запуск с использованием CI/CD
 
@@ -17,17 +17,17 @@ sudo curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 ```
-Создайте папку infra:
+Создать папку infra:
 ```bash
 mkdir infra
 ```
-- Перенести файлы docker-compose.yml и default.conf на сервер.
+- Перенести файлы docker-compose.yml и default.conf на сервер с помощью команд:
 
 ```bash
 scp docker-compose.yml username@server_ip:/home/<username>/
 scp default.conf <username>@<server_ip>:/home/<username>/
 ```
-- Создайте файл .env в дериктории infra:
+- Создать файл .env в дериктории infra:
 
 ```bash
 touch .env
@@ -45,10 +45,8 @@ SECRET_KEY=
 ALLOWED_HOSTS=
 ```
 
-Скопировать на сервер настройки docker-compose.yml, default.conf из папки infra.
-
 ## Запуск проекта через Docker
-- В папке infra выполнить команду, что бы собрать контейнер:
+- В папке infra выполните команду, чтобы собрать контейнер:
 ```bash
 sudo docker-compose up -d
 ```
@@ -62,7 +60,7 @@ sudo docker-compose exec backend python manage.py createsuperuser
 sudo docker-compose exec backend python manage.py collectstatic --no-input
 ```
 
-Дополнительно можно наполнить DB ингредиентами и тэгами:
+Наполните Базу данных ингредиентами и тэгами:
 
 ```bash
 sudo docker-compose exec backend python manage.py load_tags
@@ -71,31 +69,21 @@ sudo docker-compose exec backend python manage.py load_ingrs
 
 ## Запуск проекта в dev-режиме
 
-- Установить и активировать виртуальное окружение
-
-```bash
-source /venv/bin/activated
-```
-
-- Установить зависимости из файла requirements.txt
+- Установите и активируйте виртуальное окружение
+- Установите зависимости из файла requirements.txt
 
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-- Выполнить миграции:
+- Выполните миграции:
 
 ```bash
 python manage.py migrate
 ```
 
-- В папке с файлом manage.py выполнить команду:
+- В папке с файлом manage.py выполните команду:
 ```bash
 python manage.py runserver
-```
-
-### Документация к API доступна после запуска
-```url
-http://127.0.0.1/api/docs/
 ```
