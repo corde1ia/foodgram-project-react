@@ -194,6 +194,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeAddSerializer
 
+
     def get_queryset(self):
         if self.request.user.is_authenticated:
             return Recipe.objects.annotate(
