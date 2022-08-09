@@ -208,48 +208,32 @@ class RecipeAddSerializer(serializers.ModelSerializer):
                 'Необходимо добавить хотя бы 1 ингредиент в рецепт'
             )
         for item in ingredients:
+            name = ingredient['id']
             if int(item.get('amount')) < s.MIN_INGREDIENT_AMOUNT:
                 raise serializers.ValidationError(
-                    'Кол-во ингредиента не может быть меньше единицы'
+                    f'Кол-во ингредиента {name} не может быть меньше единицы'
                 )
             ingredient = get_object_or_404(Ingredient, id=item['id'])
             if ingredient in ingredient_list:
                 raise serializers.ValidationError(
-                    'Ингредиент {name} уже добавлен в рецепт')
+                    f'Ингредиент {name} уже добавлен в рецепт')
             ingredient_list.append(ingredient)
+        
         tags = data['tags']
         if not tags:
             raise serializers.ValidationError(
-                'Необходимо указать хотя бы один тэг')
+                'Необходимо указать хотя бы один тэг')      
         for tag_name in tags:
             if not Tag.objects.filter(name=tag_name).exists():
                 raise serializers.ValidationError(
                     f'Данного тэга - {tag_name} - не существует!')
+        
         cooking_time = data['cooking_time']
         if int(cooking_time) < s.MIN_COOKING_TIME:
             raise serializers.ValidationError(
                 'Время приготовления не может быть меньше минуты'
             )
         return data
-
-    # def validate_cooking_time(self, cooking_time):
-    #     if int(cooking_time) < s.MIN_COOKING_TIME:
-    #         raise serializers.ValidationError(
-    #             'Время приготовления не может быть меньше минуты'
-    #         )
-    #     return cooking_time
-
-    # def validate_ingredients(self, ingredients):
-    #     if not ingredients:
-    #         raise serializers.ValidationError(
-    #             'Необходимо добавить хотя бы 1 ингредиент в рецепт'
-    #         )
-    #     for ingredient in ingredients:
-    #         if int(ingredient.get('amount')) < s.MIN_INGREDIENT_AMOUNT:
-    #             raise serializers.ValidationError(
-    #                 'Кол-во ингредиента не может быть меньше единицы'
-    #             )
-    #     return ingredients
 
     def create_ingredients(self, ingredients, recipe):
         for ingredient in ingredients:
