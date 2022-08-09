@@ -207,7 +207,7 @@ class RecipeAddSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Необходимо добавить хотя бы 1 ингредиент в рецепт')
         for item in ingredients:
-            name = item['id']
+            name = item['name']
             if int(item.get('amount')) < s.MIN_INGREDIENT_AMOUNT:
                 raise serializers.ValidationError(
                     f'Кол-во ингредиента - {name} - '
