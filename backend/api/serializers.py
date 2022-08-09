@@ -210,11 +210,11 @@ class RecipeAddSerializer(serializers.ModelSerializer):
             name = item['id']
             if int(item.get('amount')) < s.MIN_INGREDIENT_AMOUNT:
                 raise serializers.ValidationError(
-                    f'Кол-во ингредиента {name} не может быть меньше единицы')
+                    f'Кол-во ингредиента - {name} - не может быть меньше единицы')
             ingredient = get_object_or_404(Ingredient, id=item['id'])
             if ingredient in ingredient_list:
                 raise serializers.ValidationError(
-                    f'Ингредиент {name} уже добавлен в рецепт')
+                    f'Ингредиент - {name} - уже добавлен в рецепт')
             ingredient_list.append(ingredient)
         tags = data['tags']
         if not tags:
@@ -223,7 +223,7 @@ class RecipeAddSerializer(serializers.ModelSerializer):
         for tag_name in tags:
             if not Tag.objects.filter(name=tag_name).exists():
                 raise serializers.ValidationError(
-                    f'Данного тэга - {tag_name} - не существует!')
+                    f'Тэга - {tag_name} - не существует')
         cooking_time = data['cooking_time']
         if int(cooking_time) < s.MIN_COOKING_TIME:
             raise serializers.ValidationError(
