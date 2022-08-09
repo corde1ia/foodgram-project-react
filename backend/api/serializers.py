@@ -210,7 +210,8 @@ class RecipeAddSerializer(serializers.ModelSerializer):
             name = item['id']
             if int(item.get('amount')) < s.MIN_INGREDIENT_AMOUNT:
                 raise serializers.ValidationError(
-                    f'Кол-во ингредиента - {name} - не может быть меньше единицы')
+                    f'Кол-во ингредиента - {name} - '
+                    f'не может быть меньше единицы')
             ingredient = get_object_or_404(Ingredient, id=item['id'])
             if ingredient in ingredient_list:
                 raise serializers.ValidationError(
