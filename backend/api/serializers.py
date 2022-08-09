@@ -207,15 +207,14 @@ class RecipeAddSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Необходимо добавить хотя бы 1 ингредиент в рецепт')
         for item in ingredients:
-            name = item['name']
+            ingredient = get_object_or_404(Ingredient, id=item['id'])
             if int(item.get('amount')) < s.MIN_INGREDIENT_AMOUNT:
                 raise serializers.ValidationError(
-                    f'Кол-во ингредиента - {name} - '
+                    f'Кол-во ингредиента - {ingredient} - '
                     f'не может быть меньше единицы')
-            ingredient = get_object_or_404(Ingredient, id=item['id'])
             if ingredient in ingredient_list:
                 raise serializers.ValidationError(
-                    f'Ингредиент - {name} - уже добавлен в рецепт')
+                    f'Ингредиент - {ingredient} - уже добавлен в рецепт')
             ingredient_list.append(ingredient)
         tags = data['tags']
         if not tags:

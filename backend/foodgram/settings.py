@@ -16,8 +16,7 @@ SECRET_KEY = os.getenv(
     '326n26835625BEWSRTSER@T#%$Bwertb)'
 )
 
-DEBUG = True
-# os.getenv('DEBUG', default='True') == 'True'
+DEBUG = os.getenv('DEBUG', default='True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS', default='localhost').split(', ')
