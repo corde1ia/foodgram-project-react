@@ -9,7 +9,8 @@ class UserAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'username', 'email',
         'first_name', 'last_name', 'date_joined',
+        'is_superuser', 'is_staff'
     )
     search_fields = ('username', 'email', 'first_name', 'last_name')
-    list_filter = ('date_joined', 'first_name', 'email')
+    list_filter = ('is_superuser', 'is_staff',)
     empty_value_display = '-пусто-'

@@ -58,12 +58,9 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'name', 'measurement_unit',
-    )
-    search_fields = (
-        'name', 'measurement_unit',
-    )
+    list_display = ('id', 'name', 'measurement_unit',)
+    search_fields = ('name', 'measurement_unit',)
+    list_filter = ('measurement_unit',)
 
 
 @admin.register(Subscribe)
@@ -72,25 +69,34 @@ class SubscribeAdmin(admin.ModelAdmin):
         'id', 'user', 'author', 'created',
     )
     search_fields = (
-        'user__email', 'author__email',
+        'user__email', 'author__email', 'user__username', 'author__username'
     )
 
 
 @admin.register(FavoriteRecipe)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'user', 'get_recipe', 'get_count'
+    list_display = ('id', 'user', 'get_recipe', 'get_count', 'get_tags')
+    search_fields = (
+        'recipe__name',
+        'user__username',
+        'user__email',
     )
+    list_filter = ('recipe__tags',)
 
-    @admin.display(
-        description='Рецепты')
+    @admin.display(description='Тэги')
+    def get_tags(self, obj):
+        return [
+            f'{item["tags__name"]} ' for item in obj.recipe.values('tags__name')[:10]
+        ]
+
+
+    @admin.display(description='Рецепты')
     def get_recipe(self, obj):
         return [
             f'{item["name"]} ' for item in obj.recipe.values('name')[:10]
         ]
 
-    @admin.display(
-        description='В избранных')
+    @admin.display(description='В избранных')
     def get_count(self, obj):
         return obj.recipe.count()
 
@@ -98,8 +104,13 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
 @admin.register(ShoppingCart)
 class SoppingCartAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'user', 'get_recipe', 'get_count'
+        'id', 'user', 'get_recipe', 'get_count', 'get_tags')
+    search_fields = (
+        'recipe__name',
+        'user__username',
+        'user__email'
     )
+    list_filter = ('recipe__tags',)
 
     @admin.display(description='Рецепты')
     def get_recipe(self, obj):
@@ -110,3 +121,9 @@ class SoppingCartAdmin(admin.ModelAdmin):
     @admin.display(description='Рецепт в избранных')
     def get_count(self, obj):
         return obj.recipe.count()
+
+    @admin.display(description='Тэги')
+    def get_tags(self, obj):
+        return [
+            f'{item["tags__name"]} ' for item in obj.recipe.values('tags__name')[:10]
+        ]

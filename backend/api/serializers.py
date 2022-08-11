@@ -188,7 +188,7 @@ class RecipeAddSerializer(serializers.ModelSerializer):
     ingredients = IngredientsEditSerializer(many=True)
     image = Base64ImageField(
         max_length=None,
-        use_url=True
+        use_url=True,
     )
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
