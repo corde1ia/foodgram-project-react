@@ -85,10 +85,10 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
 
     @admin.display(description='Тэги')
     def get_tags(self, obj):
+        tags_obj = obj.recipe.values('tags__name')
         return [
-            f'{item["tags__name"]} ' for item in obj.recipe.values('tags__name')[:10]
+            f'{item["tags__name"]} ' for item in tags_obj
         ]
-
 
     @admin.display(description='Рецепты')
     def get_recipe(self, obj):
@@ -124,6 +124,7 @@ class SoppingCartAdmin(admin.ModelAdmin):
 
     @admin.display(description='Тэги')
     def get_tags(self, obj):
+        tags_obj = obj.recipe.values('tags__name')
         return [
-            f'{item["tags__name"]} ' for item in obj.recipe.values('tags__name')[:10]
+            f'{item["tags__name"]} ' for item in tags_obj
         ]
