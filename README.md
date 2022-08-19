@@ -1,4 +1,4 @@
-![foodgram-project-react Workflow Status](https://github.com/corde1ia/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg?branch=master&event=push)
+![foodgram-project-react Workflow Status](https://github.com/corde1ia/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg?branch=master&event=push) - сервер временно отключен. При необходимости раскомментировать часть кода "deploy" в файле workflow.
 
 # Продуктовый помощник Foodgram
 
